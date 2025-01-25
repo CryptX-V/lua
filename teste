@@ -1,0 +1,60 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local jumpHeight = 50
+local wallCheckDistance = 3
+local angleAdjustment = 45
+
+local canWallHop = true
+local lastWallPosition = nil
+local lastWallTime = 0
+local isJumping = false
+
+local RunService = game:GetService("RunService")
+
+local function isWallInFront()
+    local ray = Ray.new(rootPart.Position, rootPart.CFrame.LookVector * wallCheckDistance)
+    local hit, hitPosition = workspace:FindPartOnRay(ray, character)
+
+    if hit then
+        return hitPosition
+    end
+    return nil
+end
+
+local function performWallHop(hitPosition)
+    local currentTime = tick()
+
+    if canWallHop and humanoid.FloorMaterial == Enum.Material.Air and 
+       (lastWallPosition == nil or (hitPosition - lastWallPosition).Magnitude > 1) and 
+       (currentTime - lastWallTime > 0.05) then -- Réduction du délai pour une vitesse maximale
+        
+        -- Verrouille le wall-hop temporairement
+        canWallHop = false
+        isJumping = true
+
+        -- Ajuste l'angle et applique une vitesse verticale
+        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(angleAdjustment), 0)
+        rootPart.Velocity = Vector3.new(0, jumpHeight, 0)
+
+        -- Sauvegarde la position et le temps
+        lastWallPosition = hitPosition
+        lastWallTime = currentTime
+
+        -- Réinitialise rapidement l'angle
+        task.defer(function()
+            rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(-angleAdjustment), 0)
+            isJumping = false
+            canWallHop = true
+        end)
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    local hitPosition = isWallInFront()
+    if hitPosition then
+        performWallHop(hitPosition)
+    end
+end)

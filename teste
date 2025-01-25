@@ -3,28 +3,27 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local jumpHeight = 70 -- Augmente la hauteur du saut
-local wallCheckDistance = 2 -- Distance pour détecter un mur
-local angleAdjustment = 20 -- Petit ajustement d'angle pour simuler un vrai wall-hop
-local wallHopCooldown = 0.1 -- Délai minimal entre deux wall-hops
+local jumpHeight = 70 
+local wallCheckDistance = 2
+local angleAdjustment = 20 
+local wallHopCooldown = 0.1 
+local lastWallTime = 0 
 
-local lastWallTime = 0 -- Gère le délai entre les sauts
 
--- Détection du mur devant le joueur
 local function isWallInFront()
     local ray = Ray.new(rootPart.Position, rootPart.CFrame.LookVector * wallCheckDistance)
     local hit, _ = workspace:FindPartOnRay(ray, character)
-    return hit ~= nil -- Retourne vrai si un mur est détecté
+    return hit ~= nil
 end
 
--- Effectue un wall-hop
+
 local function performWallHop()
     local currentTime = tick()
     if currentTime - lastWallTime >= wallHopCooldown and humanoid.FloorMaterial == Enum.Material.Air then
         -- Sauvegarde le temps du saut
         lastWallTime = currentTime
 
-        -- Ajuste l'angle pour donner un effet de rotation
+     
         rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(angleAdjustment), 0)
         
         -- Applique une vélocité pour sauter
@@ -32,7 +31,7 @@ local function performWallHop()
     end
 end
 
--- Vérifie constamment si le joueur est devant un mur et effectue un wall-hop
+
 game:GetService("RunService").Stepped:Connect(function()
     if isWallInFront() then
         performWallHop()

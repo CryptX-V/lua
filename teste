@@ -3,30 +3,36 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local jumpHeight = 70 
-local wallCheckDistance = 2
+local jumpHeight = 70
+local wallCheckDistance = 2 
 local angleAdjustment = 20 
 local wallHopCooldown = 0.1 
+
 local lastWallTime = 0 
+local toggleAngle = false 
 
 
 local function isWallInFront()
     local ray = Ray.new(rootPart.Position, rootPart.CFrame.LookVector * wallCheckDistance)
     local hit, _ = workspace:FindPartOnRay(ray, character)
-    return hit ~= nil
+    return hit ~= nil 
 end
 
 
 local function performWallHop()
     local currentTime = tick()
     if currentTime - lastWallTime >= wallHopCooldown and humanoid.FloorMaterial == Enum.Material.Air then
-        -- Sauvegarde le temps du saut
+   
         lastWallTime = currentTime
 
-     
-        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(angleAdjustment), 0)
+      
+        toggleAngle = not toggleAngle
+        local angleDirection = toggleAngle and angleAdjustment or -angleAdjustment
+
         
-        -- Applique une vélocité pour sauter
+        rootPart.CFrame = rootPart.CFrame * CFrame.Angles(0, math.rad(angleDirection), 0)
+        
+   
         rootPart.Velocity = Vector3.new(0, jumpHeight, 0)
     end
 end

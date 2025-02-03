@@ -1,0 +1,103 @@
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local camera = workspace.CurrentCamera
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+local isFreecam = false
+local camSpeed = 1
+local moveVector = Vector3.new()
+local originalCFrame
+local uiEnabled = true
+local yaw = 0 -- Rotation horizontale
+local pitch = 0 -- Rotation verticale
+
+-- Affichage d'une notification Roblox
+StarterGui:SetCore("SendNotification", {
+    Title = "Script Loaded",
+    Text = "Script by zyn1x_tts (CryptX)",
+    Duration = 5
+})
+
+-- Détection des touches pour le déplacement (QWERTY)
+local moveBindings = {
+    [Enum.KeyCode.W] = Vector3.new(0, 0, -1), -- Avant
+    [Enum.KeyCode.S] = Vector3.new(0, 0, 1),  -- Arrière
+    [Enum.KeyCode.A] = Vector3.new(-1, 0, 0), -- Gauche
+    [Enum.KeyCode.D] = Vector3.new(1, 0, 0),  -- Droite
+    [Enum.KeyCode.E] = Vector3.new(0, 1, 0),  -- Monter
+    [Enum.KeyCode.Q] = Vector3.new(0, -1, 0)  -- Descendre
+}
+
+-- Mise à jour des touches appuyées
+local function updateMoveVector()
+    local move = Vector3.new()
+    for key, direction in pairs(moveBindings) do
+        if UserInputService:IsKeyDown(key) then
+            move = move + direction
+        end
+    end
+    if move.Magnitude > 0 then
+        moveVector = move.Unit * camSpeed
+    else
+        moveVector = Vector3.new()
+    end
+end
+
+-- Fonction pour activer/désactiver la Freecam
+local function toggleFreecam()
+    if isFreecam then
+        -- Désactivation de la Freecam
+        isFreecam = false
+        humanoid.WalkSpeed = 16
+        humanoid.JumpPower = 50
+        humanoidRootPart.Anchored = false
+        camera.CameraType = Enum.CameraType.Custom
+        camera.CFrame = originalCFrame
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, uiEnabled)
+        UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+    else
+        -- Activation de la Freecam
+        isFreecam = true
+        originalCFrame = camera.CFrame
+        humanoid.WalkSpeed = 0
+        humanoid.JumpPower = 0
+        humanoidRootPart.Anchored = true
+        camera.CameraType = Enum.CameraType.Scriptable
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+        UserInputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+        yaw, pitch = camera.CFrame:ToEulerAnglesYXZ()
+    end
+end
+
+-- Gestion du déplacement et rotation
+RunService.RenderStepped:Connect(function(deltaTime)
+    if isFreecam then
+        updateMoveVector()
+        camera.CFrame = CFrame.new(camera.CFrame.Position) 
+            * CFrame.Angles(0, yaw, 0) 
+            * CFrame.Angles(pitch, 0, 0)
+            * CFrame.new(moveVector * deltaTime * 50)
+    end
+end)
+
+-- Gestion de la rotation de la caméra avec la souris
+UserInputService.InputChanged:Connect(function(input)
+    if isFreecam and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Delta
+        yaw = yaw - delta.X * 0.002
+        pitch = math.clamp(pitch - delta.Y * 0.002, -math.pi/2, math.pi/2)
+    end
+end)
+
+-- Détecter l'appui sur la touche "C"
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.C then
+        toggleFreecam()
+    end
+end)

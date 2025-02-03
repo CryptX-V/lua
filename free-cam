@@ -17,14 +17,7 @@ local uiEnabled = true
 local yaw = 0 -- Rotation horizontale
 local pitch = 0 -- Rotation verticale
 
--- Affichage d'une notification Roblox
-StarterGui:SetCore("SendNotification", {
-    Title = "Script Loaded",
-    Text = "Script by zyn1x_tts (CryptX)",
-    Duration = 5
-})
-
--- Détection des touches pour le déplacement (QWERTY)
+-- Détection des touches pour le déplacement (version QWERTY avec E/Q)
 local moveBindings = {
     [Enum.KeyCode.W] = Vector3.new(0, 0, -1), -- Avant
     [Enum.KeyCode.S] = Vector3.new(0, 0, 1),  -- Arrière
@@ -45,7 +38,7 @@ local function updateMoveVector()
     if move.Magnitude > 0 then
         moveVector = move.Unit * camSpeed
     else
-        moveVector = Vector3.new()
+        moveVector = Vector3.new() -- Stoppe le mouvement si aucune touche n'est pressée
     end
 end
 
@@ -91,7 +84,7 @@ UserInputService.InputChanged:Connect(function(input)
     if isFreecam and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Delta
         yaw = yaw - delta.X * 0.002
-        pitch = math.clamp(pitch - delta.Y * 0.002, -math.pi/2, math.pi/2)
+        pitch = math.clamp(pitch - delta.Y * 0.002, -math.pi/2, math.pi/2) -- Empêche le retournement complet
     end
 end)
 
@@ -101,3 +94,10 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         toggleFreecam()
     end
 end)
+
+-- Affichage d'une notification Roblox
+StarterGui:SetCore("SendNotification", {
+    Title = "Script Loaded",
+    Text = "Script by zyn1x_tts (CryptX)",
+    Duration = 5
+})

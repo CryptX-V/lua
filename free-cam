@@ -97,7 +97,7 @@ end)
 
 -- Affichage d'une notification Roblox
 StarterGui:SetCore("SendNotification", {
-    Title = "Script Loaded",
-    Text = "Script by zyn1x_tts (CryptX)",
+    Title = "Script Loaded =",
+    Text = "Script by zyn1x_tts (CryptX) C for freecam",
     Duration = 5
 })
